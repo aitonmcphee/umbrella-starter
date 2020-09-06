@@ -35,10 +35,11 @@ import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.ImageView
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainContract.View {
   internal lateinit var imageView: ImageView
   internal lateinit var button: Button
-  val weatherRepository: WeatherRepository = WeatherRepositoryImpl()
+
+  internal lateinit var presenter: MainContract.Presenter
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -46,11 +47,25 @@ class MainActivity : AppCompatActivity() {
 
     imageView = findViewById(R.id.imageView)
     button = findViewById(R.id.button)
-    button.setOnClickListener { loadWeather() }
-    loadWeather()
+
+    setPresenter(MainPresenter(this, DependencyInjectorImpl()))
+    presenter.onViewCreated()
+
+    button.setOnClickListener {
+      presenter.onLoadWeatherTapped()
+    }
   }
 
-  fun displayWeatherState(weatherState: WeatherState) {
+  override fun onDestroy() {
+    presenter.onDestory()
+    super.onDestroy()
+  }
+
+  override fun setPresenter(presenter: MainContract.Presenter) {
+    this.presenter = presenter
+  }
+
+  override fun displayWeatherState(weatherState: WeatherState) {
     val drawable = resources.getDrawable(weatherDrawableResId(weatherState),
             applicationContext.getTheme())
     this.imageView.setImageDrawable(drawable)
@@ -63,17 +78,5 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
-  private fun loadWeather() {
-    val weather = weatherRepository.loadWeather()
-    val weatherState = weatherStateForWeather(weather)
-    displayWeatherState(weatherState)
-  }
-
-  private fun weatherStateForWeather(weather: Weather) : WeatherState {
-    if (weather.rain!!.amount!! > 0) {
-      return WeatherState.RAIN
-    }
-    return WeatherState.SUN
-  }
 }
 
