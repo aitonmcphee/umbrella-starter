@@ -39,7 +39,7 @@ import android.view.View
 import android.widget.ImageView
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
-// test
+
 class DrawableMatcher(val drawableResIds : List<Int>) : TypeSafeMatcher<View>() {
 
   override fun describeTo(description: Description) {
